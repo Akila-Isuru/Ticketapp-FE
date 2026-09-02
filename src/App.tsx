@@ -1,15 +1,39 @@
 import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Navbar from "./components/Navbar";
+
+const Home = () => (
+  <div className="p-8 text-xl font-semibold">Events List Page</div>
+);
+const Login = () => (
+  <div className="p-8 text-xl font-semibold">Login Form Page</div>
+);
+const Register = () => (
+  <div className="p-8 text-xl font-semibold">Register Form Page</div>
+);
+const MyBookings = () => (
+  <div className="p-8 text-xl font-semibold">My Bookings Page</div>
+);
+const AdminDashboard = () => (
+  <div className="p-8 text-xl font-semibold">Admin Dashboard</div>
+);
 
 const App: React.FC = () => {
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-      <h1 className="text-4xl font-bold text-blue-600 mb-4">
-        Ticket Booking App Setup Ready!
-      </h1>
-      <button className="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded shadow">
-        Tailwind Test Button
-      </button>
-    </div>
+    <Router>
+      <div className="min-h-screen bg-gray-100 text-slate-800">
+        <Navbar />
+        <main className="container mx-auto p-6">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/my-bookings" element={<MyBookings />} />
+            <Route path="/admin" element={<AdminDashboard />} />
+          </Routes>
+        </main>
+      </div>
+    </Router>
   );
 };
 
