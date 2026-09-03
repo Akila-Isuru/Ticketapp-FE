@@ -2,12 +2,10 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Login from "./pages/Login";
+import Register from "./pages/Register";
 
 const Home = () => (
   <div className="p-8 text-xl font-semibold">Events List Page</div>
-);
-const Register = () => (
-  <div className="p-8 text-xl font-semibold">Register Form Page</div>
 );
 const MyBookings = () => (
   <div className="p-8 text-xl font-semibold">My Bookings Page</div>
