@@ -1,17 +1,11 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
-import Home from "./pages/Home"; // Home import කළා
+import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-
-// Remaining Dummy Pages
-const MyBookings = () => (
-  <div className="p-8 text-xl font-semibold">My Bookings Page</div>
-);
-const AdminDashboard = () => (
-  <div className="p-8 text-xl font-semibold">Admin Dashboard</div>
-);
+import AdminDashboard from "./pages/AdminDashboard";
+import MyBookings from "./pages/MyBookings";
 
 const App: React.FC = () => {
   return (

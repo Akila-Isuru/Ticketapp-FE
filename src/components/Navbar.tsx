@@ -1,5 +1,5 @@
 import React, { useContext } from "react";
-import { Link, useNavigate } from "react-router-dom"; // Link එක react-router-dom එකෙන් import කළා
+import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import { Calendar, LogOut, ShieldCheck, Ticket, User } from "lucide-react";
 
@@ -12,9 +12,15 @@ function Navbar() {
     navigate("/login");
   };
 
+  // 1. Context එකේ නැත්නම් LocalStorage එකෙන් Role එක ගන්නවා
+  const userRole = role || localStorage.getItem("role") || "";
+
+  // 2. Simple / Capital ඕනෑම විදිහකට 'ADMIN' කෑල්ල තියෙනවාද බලනවා
+  const isAdmin = userRole.toUpperCase().includes("ADMIN");
+
   return (
     <nav className="bg-slate-900 text-white px-6 py-4 flex justify-between items-center shadow-md">
-      {/* 1. App Logo / Name */}
+      {/* App Logo */}
       <Link
         to="/"
         className="flex items-center gap-2 text-xl font-bold text-blue-400 hover:opacity-90"
@@ -23,7 +29,7 @@ function Navbar() {
         <span>TicketApp</span>
       </Link>
 
-      {/* 2. Navigation Links */}
+      {/* Navigation Links */}
       <div className="flex items-center gap-6">
         <Link
           to="/"
@@ -35,7 +41,8 @@ function Navbar() {
 
         {token ? (
           <>
-            {role === "ROLE_ADMIN" && (
+            {/* Admin Panel Link */}
+            {isAdmin && (
               <Link
                 to="/admin"
                 className="flex items-center gap-1 text-yellow-400 font-medium hover:text-yellow-300 transition"
