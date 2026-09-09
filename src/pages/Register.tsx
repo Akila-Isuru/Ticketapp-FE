@@ -2,13 +2,14 @@ import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import API from "../api";
 import Swal from "sweetalert2";
+import { Ticket } from "lucide-react";
 
 function Register() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("ROLE_USER"); // Default Role එක ROLE_USER
+  const [role, setRole] = useState("ROLE_USER");
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
@@ -49,8 +50,14 @@ function Register() {
     <div className="flex justify-center items-center my-8">
       <form
         onSubmit={handleSubmit}
-        className="bg-white p-8 rounded-lg shadow-md w-full max-w-md border border-gray-200"
+        className="bg-white p-8 rounded-xl shadow-md w-full max-w-md border border-gray-200"
       >
+        <div className="flex justify-center mb-4">
+          <div className="bg-indigo-100 p-3 rounded-full">
+            <Ticket className="w-6 h-6 text-indigo-600" />
+          </div>
+        </div>
+
         <h2 className="text-2xl font-bold text-center text-slate-800 mb-6">
           Create an Account
         </h2>
@@ -66,7 +73,7 @@ function Register() {
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="John Doe"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
         </div>
 
@@ -81,11 +88,11 @@ function Register() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="john@example.com"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
         </div>
 
-        {/* Phone Number (අලුතින් එකතු කළා) */}
+        {/* Phone Number */}
         <div className="mb-4">
           <label className="block text-slate-700 text-sm font-medium mb-2">
             Phone Number
@@ -96,7 +103,7 @@ function Register() {
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
             placeholder="0712345678"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
         </div>
 
@@ -111,11 +118,11 @@ function Register() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="••••••••"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
         </div>
 
-        {/* Role Selection (Optional: Default "ROLE_USER") */}
+        {/* Role Selection */}
         <div className="mb-6">
           <label className="block text-slate-700 text-sm font-medium mb-2">
             Register As
@@ -123,7 +130,7 @@ function Register() {
           <select
             value={role}
             onChange={(e) => setRole(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
           >
             <option value="ROLE_USER">User</option>
           </select>
@@ -133,7 +140,7 @@ function Register() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-md transition cursor-pointer disabled:bg-blue-300"
+          className="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium py-2 rounded-md transition cursor-pointer disabled:bg-orange-300"
         >
           {loading ? "Creating Account..." : "Register"}
         </button>
@@ -142,7 +149,7 @@ function Register() {
           Already have an account?{" "}
           <Link
             to="/login"
-            className="text-blue-600 font-medium hover:underline"
+            className="text-indigo-600 font-medium hover:underline"
           >
             Login here
           </Link>

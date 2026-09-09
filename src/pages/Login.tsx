@@ -3,6 +3,7 @@ import { AuthContext } from "../context/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
 import Swal from "sweetalert2";
 import API from "../api";
+import { Ticket } from "lucide-react";
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -45,8 +46,14 @@ function Login() {
     <div className="flex justify-center items-center mt-12">
       <form
         onSubmit={handleSubmit}
-        className="bg-white p-8 rounded-lg shadow-md w-full max-w-md border border-gray-200"
+        className="bg-white p-8 rounded-xl shadow-md w-full max-w-md border border-gray-200"
       >
+        <div className="flex justify-center mb-4">
+          <div className="bg-indigo-100 p-3 rounded-full">
+            <Ticket className="w-6 h-6 text-indigo-600" />
+          </div>
+        </div>
+
         <h2 className="text-2xl font-bold text-center text-slate-800 mb-6">
           Welcome Back
         </h2>
@@ -62,7 +69,7 @@ function Login() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="enter your email"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
         </div>
 
@@ -77,7 +84,7 @@ function Login() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="enter your password"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
         </div>
 
@@ -85,7 +92,7 @@ function Login() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-md transition cursor-pointer disabled:bg-blue-300"
+          className="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium py-2 rounded-md transition cursor-pointer disabled:bg-orange-300"
         >
           {loading ? "Logging in..." : "Login"}
         </button>
@@ -95,7 +102,7 @@ function Login() {
           Don't have an account?{" "}
           <Link
             to="/register"
-            className="text-blue-600 font-medium hover:underline"
+            className="text-indigo-600 font-medium hover:underline"
           >
             Register here
           </Link>
