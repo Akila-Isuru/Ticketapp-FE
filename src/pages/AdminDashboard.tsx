@@ -8,6 +8,9 @@ import {
   DollarSign,
   Ticket,
   Image,
+  Pencil,
+  Trash2,
+  X,
 } from "lucide-react";
 
 interface Event {
@@ -29,6 +32,8 @@ const AdminDashboard: React.FC = () => {
   const [imageUrl, setImageUrl] = useState("");
   const [eventDate, setEventDate] = useState("");
 
+  const [editingId, setEditingId] = useState<number | null>(null);
+
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -49,44 +54,101 @@ const AdminDashboard: React.FC = () => {
     fetchEvents();
   }, []);
 
-  const handleCreateEvent = async (e: React.FormEvent) => {
+  const resetForm = () => {
+    setTitle("");
+    setLocation("");
+    setTicketPrice("");
+    setTotalTickets("");
+    setImageUrl("");
+    setEventDate("");
+    setEditingId(null);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
+    const payload = {
+      title,
+      location,
+      ticketPrice: parseFloat(ticketPrice),
+      totalTickets: parseInt(totalTickets, 10),
+      imageUrl,
+      eventDate,
+    };
+
     try {
-      await API.post("/events", {
-        title,
-        location,
-        ticketPrice: parseFloat(ticketPrice),
-        totalTickets: parseInt(totalTickets, 10),
-        imageUrl,
-        eventDate,
-      });
+      if (editingId) {
+        await API.put(`/events/${editingId}`, payload);
+        Swal.fire({
+          icon: "success",
+          title: "Event Updated!",
+          timer: 1500,
+          showConfirmButton: false,
+        });
+      } else {
+        await API.post("/events", payload);
+        Swal.fire({
+          icon: "success",
+          title: "Event Created!",
+          text: "New event added successfully.",
+          timer: 1500,
+          showConfirmButton: false,
+        });
+      }
 
-      Swal.fire({
-        icon: "success",
-        title: "Event Created!",
-        text: "New event added successfully.",
-        timer: 1500,
-        showConfirmButton: false,
-      });
-
-      setTitle("");
-      setLocation("");
-      setTicketPrice("");
-      setTotalTickets("");
-      setImageUrl("");
-      setEventDate("");
-
+      resetForm();
       fetchEvents();
     } catch (error: any) {
       Swal.fire({
         icon: "error",
-        title: "Failed to Create Event",
+        title: editingId ? "Failed to Update Event" : "Failed to Create Event",
         text: error.response?.data?.message || "Something went wrong!",
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleEditClick = (evt: Event) => {
+    setEditingId(evt.id);
+    setTitle(evt.title);
+    setLocation(evt.location);
+    setTicketPrice(evt.ticketPrice.toString());
+    setTotalTickets(evt.totalTickets.toString());
+    setImageUrl(evt.imageUrl);
+    // datetime-local input needs "YYYY-MM-DDTHH:mm" format
+    setEventDate(evt.eventDate ? evt.eventDate.slice(0, 16) : "");
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleDeleteClick = async (evt: Event) => {
+    const result = await Swal.fire({
+      title: "Delete this event?",
+      text: `"${evt.title}" will be permanently removed.`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#dc2626",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: "Yes, delete it",
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await API.delete(`/events/${evt.id}`);
+        Swal.fire("Deleted!", "Event has been removed.", "success");
+        if (editingId === evt.id) {
+          resetForm();
+        }
+        fetchEvents();
+      } catch (error: any) {
+        Swal.fire(
+          "Error",
+          error.response?.data?.message || "Failed to delete event",
+          "error",
+        );
+      }
     }
   };
 
@@ -98,11 +160,23 @@ const AdminDashboard: React.FC = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="bg-white p-6 rounded-xl shadow-md border border-gray-200 h-fit">
-          <h2 className="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
-            <PlusCircle className="w-5 h-5 text-indigo-600" /> Add New Event
-          </h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
+              <PlusCircle className="w-5 h-5 text-indigo-600" />
+              {editingId ? "Edit Event" : "Add New Event"}
+            </h2>
+            {editingId && (
+              <button
+                onClick={resetForm}
+                className="text-slate-400 hover:text-slate-600 cursor-pointer"
+                title="Cancel edit"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            )}
+          </div>
 
-          <form onSubmit={handleCreateEvent} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">
                 Event Title
@@ -192,9 +266,19 @@ const AdminDashboard: React.FC = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 rounded-md transition cursor-pointer disabled:bg-indigo-300 text-sm mt-2"
+              className={`w-full text-white font-medium py-2 rounded-md transition cursor-pointer text-sm mt-2 ${
+                editingId
+                  ? "bg-orange-500 hover:bg-orange-600 disabled:bg-orange-300"
+                  : "bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300"
+              }`}
             >
-              {loading ? "Creating..." : "Create Event"}
+              {loading
+                ? editingId
+                  ? "Updating..."
+                  : "Creating..."
+                : editingId
+                  ? "Update Event"
+                  : "Create Event"}
             </button>
           </form>
         </div>
@@ -214,7 +298,11 @@ const AdminDashboard: React.FC = () => {
               {events.map((evt) => (
                 <div
                   key={evt.id}
-                  className="bg-white p-5 rounded-xl shadow-sm border border-gray-200 flex justify-between items-center gap-4"
+                  className={`bg-white p-5 rounded-xl shadow-sm border flex justify-between items-center gap-4 ${
+                    editingId === evt.id
+                      ? "border-indigo-400 ring-2 ring-indigo-100"
+                      : "border-gray-200"
+                  }`}
                 >
                   {evt.imageUrl && (
                     <img
@@ -245,6 +333,23 @@ const AdminDashboard: React.FC = () => {
                         {evt.availableTickets} / {evt.totalTickets} Left
                       </span>
                     </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <button
+                      onClick={() => handleEditClick(evt)}
+                      className="p-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-md transition cursor-pointer"
+                      title="Edit event"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteClick(evt)}
+                      className="p-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-md transition cursor-pointer"
+                      title="Delete event"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </div>
                 </div>
               ))}
