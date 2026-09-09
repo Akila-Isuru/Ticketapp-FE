@@ -1,7 +1,14 @@
 import React, { useEffect, useState, useContext } from "react";
 import API from "../api";
 import { AuthContext } from "../context/AuthContext";
-import { Calendar, Ticket, DollarSign, CheckCircle, Clock } from "lucide-react";
+import {
+  Calendar,
+  Ticket,
+  DollarSign,
+  CheckCircle,
+  Clock,
+  QrCode,
+} from "lucide-react";
 import Swal from "sweetalert2";
 
 interface Booking {
@@ -132,6 +139,29 @@ const MyBookings: React.FC = () => {
     }
   };
 
+  const handleViewQRCode = async (booking: Booking) => {
+    try {
+      const response = await API.get(`/bookings/${booking.bookingId}/qrcode`, {
+        responseType: "blob",
+      });
+
+      const imageUrl = URL.createObjectURL(response.data);
+
+      Swal.fire({
+        title: "Your Ticket QR Code",
+        html: `<p style="color:#6b7280; font-size:13px; margin-bottom:12px;">${booking.eventTitle} — ${booking.orderId}</p>`,
+        imageUrl: imageUrl,
+        imageWidth: 250,
+        imageHeight: 250,
+        imageAlt: "Booking QR Code",
+        confirmButtonText: "Close",
+        confirmButtonColor: "#4f46e5",
+      });
+    } catch (error) {
+      Swal.fire("Error", "Failed to load QR code", "error");
+    }
+  };
+
   if (loading) {
     return (
       <div className="text-center mt-12 text-slate-600 font-semibold">
@@ -181,8 +211,8 @@ const MyBookings: React.FC = () => {
 
                 <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 mt-2">
                   <span className="flex items-center gap-1">
-                    <Ticket className="w-4 h-4 text-blue-500" /> {b.ticketCount}{" "}
-                    Tickets
+                    <Ticket className="w-4 h-4 text-indigo-500" />{" "}
+                    {b.ticketCount} Tickets
                   </span>
                   <span className="flex items-center gap-1 font-semibold text-slate-700">
                     <DollarSign className="w-4 h-4 text-green-600" /> Total: LKR{" "}
@@ -195,13 +225,22 @@ const MyBookings: React.FC = () => {
                 </div>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 {b.paymentStatus === "PENDING" && (
                   <button
                     onClick={() => handlePayNow(b)}
-                    className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition cursor-pointer"
+                    className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition cursor-pointer"
                   >
                     Pay Now
+                  </button>
+                )}
+
+                {b.paymentStatus === "PAID" && (
+                  <button
+                    onClick={() => handleViewQRCode(b)}
+                    className="flex items-center gap-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 border border-indigo-200 px-4 py-2 rounded-lg text-sm font-medium transition cursor-pointer"
+                  >
+                    <QrCode className="w-4 h-4" /> View QR Ticket
                   </button>
                 )}
 

@@ -1,5 +1,6 @@
 import React from "react";
-import { MapPin, Ticket, DollarSign } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { MapPin, Ticket, DollarSign, Calendar } from "lucide-react";
 
 interface Event {
   id: number;
@@ -9,6 +10,7 @@ interface Event {
   totalTickets: number;
   availableTickets: number;
   imageUrl: string;
+  eventDate: string;
 }
 
 interface EventCardProps {
@@ -17,8 +19,33 @@ interface EventCardProps {
 }
 
 const EventCard: React.FC<EventCardProps> = ({ event, onBook }) => {
+  const navigate = useNavigate();
+
+  const formattedDate = new Date(event.eventDate).toLocaleDateString("en-US", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+
+  const formattedTime = new Date(event.eventDate).toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
+  const handleCardClick = () => {
+    navigate(`/events/${event.id}`);
+  };
+
+  const handleBookClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onBook(event);
+  };
+
   return (
-    <div className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-200 flex flex-col hover:shadow-lg transition">
+    <div
+      onClick={handleCardClick}
+      className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-200 flex flex-col hover:shadow-lg transition cursor-pointer"
+    >
       <div className="w-full h-40 bg-gray-100 overflow-hidden">
         {event.imageUrl ? (
           <img
@@ -40,6 +67,13 @@ const EventCard: React.FC<EventCardProps> = ({ event, onBook }) => {
           </h2>
 
           <div className="flex items-center gap-2 text-gray-600 mb-2 text-sm">
+            <Calendar className="w-4 h-4 text-orange-500" />
+            <span>
+              {formattedDate} | {formattedTime}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2 text-gray-600 mb-2 text-sm">
             <MapPin className="w-4 h-4 text-indigo-500" />
             <span>{event.location}</span>
           </div>
@@ -59,7 +93,7 @@ const EventCard: React.FC<EventCardProps> = ({ event, onBook }) => {
         </div>
 
         <button
-          onClick={() => onBook(event)}
+          onClick={handleBookClick}
           disabled={event.availableTickets <= 0}
           className="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium py-2 rounded-lg transition disabled:bg-gray-300 disabled:cursor-not-allowed cursor-pointer"
         >

@@ -1,11 +1,9 @@
 import React, { useEffect, useState, useContext } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import API from "../api";
 import { AuthContext } from "../context/AuthContext";
 import Swal from "sweetalert2";
-import { useNavigate } from "react-router-dom";
-import EventCard from "../components/EventCard";
-import Hero from "../components/Hero";
-import { Search } from "lucide-react";
+import { MapPin, Ticket, DollarSign, Calendar, ArrowLeft } from "lucide-react";
 
 interface Event {
   id: number;
@@ -18,58 +16,29 @@ interface Event {
   eventDate: string;
 }
 
-function Home() {
-  const [events, setEvents] = useState<Event[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [searchWord, setSearchWord] = useState("");
-  const { token } = useContext(AuthContext);
+const EventDetails: React.FC = () => {
+  const { id } = useParams();
   const navigate = useNavigate();
+  const { token } = useContext(AuthContext);
 
-  const fetchEvents = async () => {
-    setLoading(true);
+  const [event, setEvent] = useState<Event | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const fetchEvent = async () => {
     try {
-      const response = await API.get("/events");
-      if (response.data && response.data.data) {
-        setEvents(response.data.data);
-      } else if (Array.isArray(response.data)) {
-        setEvents(response.data);
-      }
+      const response = await API.get(`/events/${id}`);
+      setEvent(response.data.data);
     } catch (error) {
-      console.error("Error fetching events:", error);
+      console.error("Failed to fetch event:", error);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchEvents();
-  }, []);
+    fetchEvent();
+  }, [id]);
 
-  const handleSearch = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!searchWord.trim()) {
-      fetchEvents();
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const response = await API.get(`/events/search?word=${searchWord}`);
-      setEvents(response.data.data || []);
-    } catch (error) {
-      console.error("Search failed:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleClearSearch = () => {
-    setSearchWord("");
-    fetchEvents();
-  };
-
-  // Mock Payment Gateway Modal Function
   const openMockPaymentModal = async (
     bookingId: number,
     eventTitle: string,
@@ -138,7 +107,9 @@ function Home() {
     }
   };
 
-  const handleBookTicket = async (event: Event) => {
+  const handleBookTicket = async () => {
+    if (!event) return;
+
     if (!token) {
       Swal.fire({
         icon: "warning",
@@ -182,14 +153,13 @@ function Home() {
 
         const bookingData = response.data.data;
 
-        // Open Mock Card Payment Modal
         await openMockPaymentModal(
           bookingData.bookingId,
           bookingData.eventTitle,
           bookingData.totalAmount,
         );
 
-        fetchEvents();
+        fetchEvent();
         navigate("/my-bookings");
       } catch (error: any) {
         Swal.fire({
@@ -201,64 +171,104 @@ function Home() {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="text-center mt-12 text-slate-600 font-semibold">
+        Loading Event...
+      </div>
+    );
+  }
+
+  if (!event) {
+    return (
+      <div className="text-center mt-12 text-slate-600 font-semibold">
+        Event not found.
+      </div>
+    );
+  }
+
+  const formattedDate = new Date(event.eventDate).toLocaleDateString("en-US", {
+    weekday: "long",
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  });
+
+  const formattedTime = new Date(event.eventDate).toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
   return (
-    <div className="max-w-6xl mx-auto my-8">
-      <Hero />
+    <div className="max-w-4xl mx-auto my-8">
+      <button
+        onClick={() => navigate("/")}
+        className="flex items-center gap-1 text-indigo-600 hover:text-indigo-700 mb-6 text-sm font-medium cursor-pointer"
+      >
+        <ArrowLeft className="w-4 h-4" /> Back to Events
+      </button>
 
-      <div id="events-section">
-        <h1 className="text-3xl font-bold text-slate-800 mb-6 text-center">
-          Upcoming Events
-        </h1>
-
-        <form
-          onSubmit={handleSearch}
-          className="flex justify-center gap-2 mb-8 max-w-md mx-auto"
-        >
-          <div className="relative flex-1">
-            <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              value={searchWord}
-              onChange={(e) => setSearchWord(e.target.value)}
-              placeholder="Search by event name or location..."
-              className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+      <div className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
+        <div className="w-full h-72 bg-gray-100">
+          {event.imageUrl ? (
+            <img
+              src={event.imageUrl}
+              alt={event.title}
+              className="w-full h-full object-cover"
             />
-          </div>
-          <button
-            type="submit"
-            className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm font-medium transition cursor-pointer"
-          >
-            Search
-          </button>
-          {searchWord && (
-            <button
-              type="button"
-              onClick={handleClearSearch}
-              className="bg-gray-100 hover:bg-gray-200 text-slate-600 px-4 py-2 rounded-md text-sm font-medium transition cursor-pointer"
-            >
-              Clear
-            </button>
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-gray-400">
+              No Image
+            </div>
           )}
-        </form>
+        </div>
 
-        {loading ? (
-          <div className="text-center mt-12 text-slate-600 font-semibold">
-            Loading Events...
+        <div className="p-8">
+          <h1 className="text-3xl font-bold text-slate-800 mb-4">
+            {event.title}
+          </h1>
+
+          <div className="flex flex-col gap-3 mb-6">
+            <div className="flex items-center gap-2 text-slate-600">
+              <Calendar className="w-5 h-5 text-orange-500" />
+              <span>
+                {formattedDate} | {formattedTime}
+              </span>
+            </div>
+            <div className="flex items-center gap-2 text-slate-600">
+              <MapPin className="w-5 h-5 text-indigo-500" />
+              <span>{event.location}</span>
+            </div>
+            <div className="flex items-center gap-2 text-slate-600">
+              <Ticket className="w-5 h-5 text-green-500" />
+              <span>
+                {event.availableTickets} / {event.totalTickets} tickets
+                available
+              </span>
+            </div>
           </div>
-        ) : events.length === 0 ? (
-          <p className="text-center text-gray-500">
-            No events found at the moment.
-          </p>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {events.map((evt) => (
-              <EventCard key={evt.id} event={evt} onBook={handleBookTicket} />
-            ))}
+
+          <div className="flex items-center justify-between border-t border-gray-200 pt-6">
+            <div className="flex items-center gap-1 text-2xl font-bold text-indigo-600">
+              <DollarSign className="w-6 h-6" />
+              <span>{event.ticketPrice}</span>
+              <span className="text-sm font-normal text-gray-500 ml-1">
+                / ticket
+              </span>
+            </div>
+
+            <button
+              onClick={handleBookTicket}
+              disabled={event.availableTickets <= 0}
+              className="bg-orange-500 hover:bg-orange-600 text-white font-medium px-8 py-3 rounded-lg transition disabled:bg-gray-300 disabled:cursor-not-allowed cursor-pointer"
+            >
+              {event.availableTickets > 0 ? "Book Now" : "Sold Out"}
+            </button>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );
-}
+};
 
-export default Home;
+export default EventDetails;

@@ -18,6 +18,7 @@ interface Event {
   totalTickets: number;
   availableTickets: number;
   imageUrl: string;
+  eventDate: string;
 }
 
 const AdminDashboard: React.FC = () => {
@@ -26,6 +27,7 @@ const AdminDashboard: React.FC = () => {
   const [ticketPrice, setTicketPrice] = useState("");
   const [totalTickets, setTotalTickets] = useState("");
   const [imageUrl, setImageUrl] = useState("");
+  const [eventDate, setEventDate] = useState("");
 
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(false);
@@ -58,6 +60,7 @@ const AdminDashboard: React.FC = () => {
         ticketPrice: parseFloat(ticketPrice),
         totalTickets: parseInt(totalTickets, 10),
         imageUrl,
+        eventDate,
       });
 
       Swal.fire({
@@ -73,6 +76,7 @@ const AdminDashboard: React.FC = () => {
       setTicketPrice("");
       setTotalTickets("");
       setImageUrl("");
+      setEventDate("");
 
       fetchEvents();
     } catch (error: any) {
@@ -123,6 +127,19 @@ const AdminDashboard: React.FC = () => {
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
                 placeholder="e.g., Nelum Pokuna, Colombo"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1 flex items-center gap-1">
+                <Calendar className="w-3.5 h-3.5" /> Event Date & Time
+              </label>
+              <input
+                type="datetime-local"
+                required
+                value={eventDate}
+                onChange={(e) => setEventDate(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
               />
             </div>
@@ -210,7 +227,11 @@ const AdminDashboard: React.FC = () => {
                     <h3 className="font-bold text-lg text-slate-800">
                       {evt.title}
                     </h3>
-                    <div className="flex items-center gap-4 text-xs text-gray-600 mt-2">
+                    <div className="flex items-center gap-4 text-xs text-gray-600 mt-2 flex-wrap">
+                      <span className="flex items-center gap-1">
+                        <Calendar className="w-3.5 h-3.5 text-indigo-500" />{" "}
+                        {new Date(evt.eventDate).toLocaleString()}
+                      </span>
                       <span className="flex items-center gap-1">
                         <MapPin className="w-3.5 h-3.5 text-indigo-500" />{" "}
                         {evt.location}
