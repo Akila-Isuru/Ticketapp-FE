@@ -4,6 +4,7 @@ import { useNavigate, Link } from "react-router-dom";
 import Swal from "sweetalert2";
 import API from "../api";
 import { Ticket } from "lucide-react";
+import { GoogleLogin, type CredentialResponse } from "@react-oauth/google";
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -39,6 +40,34 @@ function Login() {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGoogleSuccess = async (
+    credentialResponse: CredentialResponse,
+  ) => {
+    try {
+      const idToken = credentialResponse.credential;
+
+      const response = await API.post("/auth/google", { idToken });
+
+      const token = response.data.token || response.data.data?.token;
+      login(token);
+
+      Swal.fire({
+        icon: "success",
+        title: "Login Successfull!",
+        showConfirmButton: false,
+        timer: 1500,
+      });
+
+      navigate("/");
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "Google Login failed!",
+        text: "Something went wrong, please try again.",
+      });
     }
   };
 
@@ -96,6 +125,27 @@ function Login() {
         >
           {loading ? "Logging in..." : "Login"}
         </button>
+
+        {/* Divider */}
+        <div className="flex items-center gap-3 my-5">
+          <div className="flex-1 h-px bg-gray-200"></div>
+          <span className="text-xs text-gray-400">OR</span>
+          <div className="flex-1 h-px bg-gray-200"></div>
+        </div>
+
+        {/* Google Sign-In */}
+        <div className="flex justify-center">
+          <GoogleLogin
+            onSuccess={handleGoogleSuccess}
+            onError={() => {
+              Swal.fire({
+                icon: "error",
+                title: "Google Login failed!",
+                text: "Something went wrong, please try again.",
+              });
+            }}
+          />
+        </div>
 
         {/* Register Page Link */}
         <p className="text-center text-sm text-slate-600 mt-4">

@@ -1,17 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { MapPin, Ticket, DollarSign, Calendar } from "lucide-react";
-
-interface Event {
-  id: number;
-  title: string;
-  location: string;
-  ticketPrice: number;
-  totalTickets: number;
-  availableTickets: number;
-  imageUrl: string;
-  eventDate: string;
-}
+import type { Event } from "../types";
 
 interface EventCardProps {
   event: Event;
