@@ -1,20 +1,20 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { MapPin, Ticket, DollarSign, Calendar } from "lucide-react";
+import { MapPin, DollarSign, Calendar } from "lucide-react";
+import EventCardBadge from "./EventCardBadge";
+import EventCardImage from "./EventCardImage";
 import type { Event } from "../types";
 
 interface EventCardProps {
   event: Event;
-  onBook: (event: Event) => void;
 }
 
-const EventCard: React.FC<EventCardProps> = ({ event, onBook }) => {
+const EventCard: React.FC<EventCardProps> = ({ event }) => {
   const navigate = useNavigate();
 
   const formattedDate = new Date(event.eventDate).toLocaleDateString("en-US", {
     day: "2-digit",
     month: "short",
-    year: "numeric",
   });
 
   const formattedTime = new Date(event.eventDate).toLocaleTimeString("en-US", {
@@ -26,69 +26,36 @@ const EventCard: React.FC<EventCardProps> = ({ event, onBook }) => {
     navigate(`/events/${event.id}`);
   };
 
-  const handleBookClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    onBook(event);
-  };
-
   return (
     <div
       onClick={handleCardClick}
-      className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-200 flex flex-col hover:shadow-lg transition cursor-pointer"
+      className="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-md hover:border-indigo-200 transition cursor-pointer overflow-hidden flex flex-col"
     >
-      <div className="w-full h-40 bg-gray-100 overflow-hidden">
-        {event.imageUrl ? (
-          <img
-            src={event.imageUrl}
-            alt={event.title}
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">
-            No Image
-          </div>
-        )}
-      </div>
+      <EventCardImage imageUrl={event.imageUrl} title={event.title} />
 
-      <div className="p-6 flex flex-col flex-1 justify-between">
-        <div>
-          <h2 className="text-xl font-bold text-slate-800 mb-2">
-            {event.title}
-          </h2>
+      <div className="p-4">
+        <h2 className="text-lg font-bold text-slate-800 mb-1">{event.title}</h2>
 
-          <div className="flex items-center gap-2 text-gray-600 mb-2 text-sm">
-            <Calendar className="w-4 h-4 text-orange-500" />
-            <span>
-              {formattedDate} | {formattedTime}
-            </span>
-          </div>
-
-          <div className="flex items-center gap-2 text-gray-600 mb-2 text-sm">
-            <MapPin className="w-4 h-4 text-indigo-500" />
-            <span>{event.location}</span>
-          </div>
-
-          <div className="flex items-center gap-2 text-gray-600 mb-2 text-sm">
-            <Ticket className="w-4 h-4 text-green-500" />
-            <span>
-              Available: {event.availableTickets} / {event.totalTickets}
-            </span>
-          </div>
-
-          <div className="flex items-center gap-1 text-lg font-bold text-indigo-600 my-4">
-            <DollarSign className="w-5 h-5" />
-            <span>{event.ticketPrice}</span>
-            <span className="text-xs font-normal text-gray-500">/ ticket</span>
-          </div>
+        <div className="flex items-center gap-1 text-gray-500 text-sm mb-3">
+          <MapPin className="w-3.5 h-3.5" />
+          <span>{event.location}</span>
         </div>
 
-        <button
-          onClick={handleBookClick}
-          disabled={event.availableTickets <= 0}
-          className="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium py-2 rounded-lg transition disabled:bg-gray-300 disabled:cursor-not-allowed cursor-pointer"
-        >
-          {event.availableTickets > 0 ? "Book Now" : "Sold Out"}
-        </button>
+        <EventCardBadge />
+
+        <div className="flex items-center gap-3 mt-3">
+          <div className="flex items-center gap-1.5 text-orange-500 text-sm font-medium">
+            <Calendar className="w-4 h-4" />
+            <span>{formattedDate}</span>
+          </div>
+          <span className="text-slate-700 text-sm">{formattedTime}</span>
+          <span className="w-px h-4 bg-gray-200" />
+          <div className="flex items-center gap-1 text-indigo-600 font-bold text-sm">
+            <DollarSign className="w-4 h-4" />
+            <span>{event.ticketPrice}</span>
+            <span className="text-xs font-normal text-gray-400">onwards</span>
+          </div>
+        </div>
       </div>
     </div>
   );
