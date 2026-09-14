@@ -7,6 +7,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import AdminDashboard from "./pages/AdminDashboard";
 import MyBookings from "./pages/MyBookings";
+import EventDetails from "./pages/EventDetails";
 
 const App: React.FC = () => {
   return (
@@ -20,6 +21,7 @@ const App: React.FC = () => {
             <Route path="/register" element={<Register />} />
             <Route path="/my-bookings" element={<MyBookings />} />
             <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/events/:id" element={<EventDetails />} />
           </Routes>
         </main>
         <Footer />
