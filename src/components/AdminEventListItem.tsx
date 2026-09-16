@@ -6,6 +6,7 @@ import {
   Ticket,
   Pencil,
   Trash2,
+  Tag,
 } from "lucide-react";
 import type { Event } from "../types";
 
@@ -16,12 +17,20 @@ interface AdminEventListItemProps {
   onDelete: (event: Event) => void;
 }
 
+const CATEGORY_LABELS: Record<string, string> = {
+  CONCERT: "Concert",
+  THEATRE: "Theatre",
+  SPORTS: "Sports",
+};
+
 const AdminEventListItem: React.FC<AdminEventListItemProps> = ({
   event,
   isEditing,
   onEdit,
   onDelete,
 }) => {
+  const categoryLabel = CATEGORY_LABELS[event.category] || event.category;
+
   return (
     <div
       className={`bg-white p-5 rounded-xl shadow-sm border flex justify-between items-center gap-4 ${
@@ -38,7 +47,14 @@ const AdminEventListItem: React.FC<AdminEventListItemProps> = ({
         />
       )}
       <div className="flex-1">
-        <h3 className="font-bold text-lg text-slate-800">{event.title}</h3>
+        <div className="flex items-center gap-2 mb-1">
+          <h3 className="font-bold text-lg text-slate-800">{event.title}</h3>
+          {event.category && (
+            <span className="flex items-center gap-1 bg-indigo-50 text-indigo-600 text-xs font-medium px-2.5 py-0.5 rounded-full">
+              <Tag className="w-3 h-3" /> {categoryLabel}
+            </span>
+          )}
+        </div>
         <div className="flex items-center gap-4 text-xs text-gray-600 mt-2 flex-wrap">
           <span className="flex items-center gap-1">
             <Calendar className="w-3.5 h-3.5 text-indigo-500" />{" "}

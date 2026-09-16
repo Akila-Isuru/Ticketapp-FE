@@ -1,6 +1,7 @@
 import React, { useContext, useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
+import API from "../api";
 import {
   Calendar,
   LogOut,
@@ -9,6 +10,14 @@ import {
   User,
   ChevronDown,
 } from "lucide-react";
+import NavCategoryDropdown from "./NavCategoryDropdown";
+import type { Event } from "../types";
+
+const CATEGORIES = [
+  { key: "CONCERT", label: "Concerts" },
+  { key: "THEATRE", label: "Theatre" },
+  { key: "SPORTS", label: "Sports" },
+];
 
 function Navbar() {
   const { token, role, email, logout } = useContext(AuthContext);
@@ -19,6 +28,20 @@ function Navbar() {
   const [showNavbar, setShowNavbar] = useState(true);
   const lastScrollY = useRef(0);
 
+  const [events, setEvents] = useState<Event[]>([]);
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const response = await API.get("/events");
+        setEvents(response.data.data || []);
+      } catch (error) {
+        console.error("Failed to fetch events for navbar:", error);
+      }
+    };
+    fetchEvents();
+  }, []);
+
   const handleLogout = () => {
     setDropdownOpen(false);
     logout();
@@ -28,7 +51,6 @@ function Navbar() {
   const userRole = role || localStorage.getItem("role") || "";
   const isAdmin = userRole.toUpperCase().includes("ADMIN");
 
-  // Close the dropdown when clicking anywhere outside it
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (
@@ -42,18 +64,16 @@ function Navbar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Hide navbar on scroll down, show it again on scroll up
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
 
       if (currentScrollY < 80) {
-        // Always show near the top of the page
         setShowNavbar(true);
       } else if (currentScrollY > lastScrollY.current) {
-        setShowNavbar(false); // scrolling down
+        setShowNavbar(false);
       } else {
-        setShowNavbar(true); // scrolling up
+        setShowNavbar(true);
       }
 
       lastScrollY.current = currentScrollY;
@@ -69,7 +89,7 @@ function Navbar() {
         showNavbar ? "translate-y-0" : "-translate-y-32"
       }`}
     >
-      <nav className="max-w-7xl mx-auto bg-white/80 backdrop-blur-md text-slate-800 px-6 py-3 flex justify-between items-center rounded-2xl shadow-sm border border-gray-200">
+      <nav className="max-w-7xl mx-auto bg-white/80 backdrop-blur-md text-slate-800 px-6 py-5 flex justify-between items-center rounded-2xl shadow-sm border border-gray-200">
         <Link
           to="/"
           className="flex items-center gap-2 text-xl font-bold text-indigo-600 hover:opacity-90"
@@ -86,6 +106,14 @@ function Navbar() {
             <Calendar className="w-4 h-4" />
             <span>Events</span>
           </Link>
+
+          {CATEGORIES.map((cat) => (
+            <NavCategoryDropdown
+              key={cat.key}
+              label={cat.label}
+              events={events.filter((evt) => evt.category === cat.key)}
+            />
+          ))}
 
           {token ? (
             <div className="relative" ref={dropdownRef}>

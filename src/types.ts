@@ -14,6 +14,8 @@ export interface Event {
   availableTickets: number;
   imageUrl: string;
   eventDate: string;
+  category: string;
+  subCategory?: string;
 }
 
 export interface Booking {

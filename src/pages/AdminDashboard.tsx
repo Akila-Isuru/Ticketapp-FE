@@ -13,6 +13,8 @@ const AdminDashboard: React.FC = () => {
   const [totalTickets, setTotalTickets] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [eventDate, setEventDate] = useState("");
+  const [category, setCategory] = useState("");
+  const [subCategory, setSubCategory] = useState("");
 
   const [editingId, setEditingId] = useState<number | null>(null);
 
@@ -43,6 +45,8 @@ const AdminDashboard: React.FC = () => {
     setTotalTickets("");
     setImageUrl("");
     setEventDate("");
+    setCategory("");
+    setSubCategory("");
     setEditingId(null);
   };
 
@@ -57,6 +61,8 @@ const AdminDashboard: React.FC = () => {
       totalTickets: parseInt(totalTickets, 10),
       imageUrl,
       eventDate,
+      category,
+      subCategory: category === "CONCERT" ? subCategory : "",
     };
 
     try {
@@ -100,6 +106,8 @@ const AdminDashboard: React.FC = () => {
     setTotalTickets(evt.totalTickets.toString());
     setImageUrl(evt.imageUrl);
     setEventDate(evt.eventDate ? evt.eventDate.slice(0, 16) : "");
+    setCategory(evt.category || "");
+    setSubCategory(evt.subCategory || "");
 
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -147,6 +155,8 @@ const AdminDashboard: React.FC = () => {
           ticketPrice={ticketPrice}
           totalTickets={totalTickets}
           imageUrl={imageUrl}
+          category={category}
+          subCategory={subCategory}
           editingId={editingId}
           loading={loading}
           onTitleChange={setTitle}
@@ -155,6 +165,8 @@ const AdminDashboard: React.FC = () => {
           onTicketPriceChange={setTicketPrice}
           onTotalTicketsChange={setTotalTickets}
           onImageUrlChange={setImageUrl}
+          onCategoryChange={setCategory}
+          onSubCategoryChange={setSubCategory}
           onSubmit={handleSubmit}
           onCancelEdit={resetForm}
         />

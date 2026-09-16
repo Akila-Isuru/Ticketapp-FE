@@ -41,7 +41,7 @@ const EventCard: React.FC<EventCardProps> = ({ event }) => {
           <span>{event.location}</span>
         </div>
 
-        <EventCardBadge />
+        <EventCardBadge category={event.category} />
 
         <div className="flex items-center gap-3 mt-3">
           <div className="flex items-center gap-1.5 text-orange-500 text-sm font-medium">

@@ -1,5 +1,13 @@
 import React, { useState } from "react";
-import { PlusCircle, Calendar, Image, X, Upload, Loader2 } from "lucide-react";
+import {
+  PlusCircle,
+  Calendar,
+  Image,
+  X,
+  Upload,
+  Loader2,
+  Tag,
+} from "lucide-react";
 import API from "../api";
 import Swal from "sweetalert2";
 
@@ -10,6 +18,8 @@ interface EventFormProps {
   ticketPrice: string;
   totalTickets: string;
   imageUrl: string;
+  category: string;
+  subCategory: string;
   editingId: number | null;
   loading: boolean;
   onTitleChange: (v: string) => void;
@@ -18,9 +28,18 @@ interface EventFormProps {
   onTicketPriceChange: (v: string) => void;
   onTotalTicketsChange: (v: string) => void;
   onImageUrlChange: (v: string) => void;
+  onCategoryChange: (v: string) => void;
+  onSubCategoryChange: (v: string) => void;
   onSubmit: (e: React.FormEvent) => void;
   onCancelEdit: () => void;
 }
+
+// Sub-category options shown only when "Concert" is selected as the category
+const CONCERT_SUBCATEGORIES = [
+  "Indoor Musical Concert",
+  "Outdoor Musical Concert",
+  "EDM",
+];
 
 const EventForm: React.FC<EventFormProps> = ({
   title,
@@ -29,6 +48,8 @@ const EventForm: React.FC<EventFormProps> = ({
   ticketPrice,
   totalTickets,
   imageUrl,
+  category,
+  subCategory,
   editingId,
   loading,
   onTitleChange,
@@ -37,6 +58,8 @@ const EventForm: React.FC<EventFormProps> = ({
   onTicketPriceChange,
   onTotalTicketsChange,
   onImageUrlChange,
+  onCategoryChange,
+  onSubCategoryChange,
   onSubmit,
   onCancelEdit,
 }) => {
@@ -66,6 +89,12 @@ const EventForm: React.FC<EventFormProps> = ({
     } finally {
       setUploading(false);
     }
+  };
+
+  const handleCategoryChange = (value: string) => {
+    onCategoryChange(value);
+    // Reset sub-category whenever the main category changes
+    onSubCategoryChange("");
   };
 
   return (
@@ -100,6 +129,44 @@ const EventForm: React.FC<EventFormProps> = ({
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
           />
         </div>
+
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-1 flex items-center gap-1">
+            <Tag className="w-3.5 h-3.5" /> Category
+          </label>
+          <select
+            required
+            value={category}
+            onChange={(e) => handleCategoryChange(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-white"
+          >
+            <option value="">Select a category</option>
+            <option value="CONCERT">Concert</option>
+            <option value="THEATRE">Theatre</option>
+            <option value="SPORTS">Sports</option>
+          </select>
+        </div>
+
+        {category === "CONCERT" && (
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1 flex items-center gap-1">
+              <Tag className="w-3.5 h-3.5" /> Concert Type
+            </label>
+            <select
+              required
+              value={subCategory}
+              onChange={(e) => onSubCategoryChange(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-white"
+            >
+              <option value="">Select a concert type</option>
+              {CONCERT_SUBCATEGORIES.map((sub) => (
+                <option key={sub} value={sub}>
+                  {sub}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
 
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-1">
