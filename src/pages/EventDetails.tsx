@@ -9,13 +9,14 @@ import EventLocationMap from "../components/EventLocationMap";
 import EventTransportLinks from "../components/EventTransportLinks";
 import EventPolicies from "../components/EventPolicies";
 import TicketSelectionModal from "../components/TicketSelectionModal";
-import { openMockPaymentModal } from "../utils/paymentModal";
+import { startPayhereCheckout } from "../utils/payhereCheckout";
+import { PAYHERE_NOTIFY_URL } from "../utils/payhereConfig";
 import type { Event, TicketTier } from "../types";
 
 const EventDetails: React.FC = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { token } = useContext(AuthContext);
+  const { token, email } = useContext(AuthContext);
 
   const [event, setEvent] = useState<Event | null>(null);
   const [tiers, setTiers] = useState<TicketTier[]>([]);
@@ -46,6 +47,41 @@ const EventDetails: React.FC = () => {
     fetchEvent();
     fetchTiers();
   }, [id]);
+
+  const payForBooking = (bookingData: any) => {
+    startPayhereCheckout({
+      orderId: bookingData.orderId,
+      merchantId: bookingData.merchantId,
+      hash: bookingData.hash,
+      amount: bookingData.totalAmount,
+      currency: bookingData.currency,
+      eventTitle: bookingData.eventTitle,
+      customerFirstName: email?.split("@")[0] || "Guest",
+      customerEmail: email || "guest@example.com",
+      notifyUrl: PAYHERE_NOTIFY_URL,
+      onCompleted: () => {
+        Swal.fire(
+          "Payment Successful!",
+          "Your booking status is updated to PAID.",
+          "success",
+        );
+        fetchEvent();
+        fetchTiers();
+        navigate("/my-bookings");
+      },
+      onDismissed: () => {
+        Swal.fire(
+          "Payment Cancelled",
+          "You closed the payment window.",
+          "info",
+        );
+        navigate("/my-bookings");
+      },
+      onError: (error) => {
+        Swal.fire("Payment Error", error, "error");
+      },
+    });
+  };
 
   const handleSimpleBooking = async () => {
     if (!event) return;
@@ -91,16 +127,7 @@ const EventDetails: React.FC = () => {
           ticketCount: parseInt(ticketCount, 10),
         });
 
-        const bookingData = response.data.data;
-
-        await openMockPaymentModal(
-          bookingData.bookingId,
-          bookingData.eventTitle,
-          bookingData.totalAmount,
-        );
-
-        fetchEvent();
-        navigate("/my-bookings");
+        payForBooking(response.data.data);
       } catch (error: any) {
         Swal.fire({
           icon: "error",
@@ -142,7 +169,7 @@ const EventDetails: React.FC = () => {
       console.error(e);
     }
 
-    const selection = selections[0]; // single tier per booking, kept simple
+    const selection = selections[0]; 
 
     try {
       const response = await API.post("/bookings", {
@@ -152,19 +179,8 @@ const EventDetails: React.FC = () => {
         tierId: selection.tierId,
       });
 
-      const bookingData = response.data.data;
-
       setShowTierModal(false);
-
-      await openMockPaymentModal(
-        bookingData.bookingId,
-        bookingData.eventTitle,
-        bookingData.totalAmount,
-      );
-
-      fetchEvent();
-      fetchTiers();
-      navigate("/my-bookings");
+      payForBooking(response.data.data);
     } catch (error: any) {
       Swal.fire({
         icon: "error",

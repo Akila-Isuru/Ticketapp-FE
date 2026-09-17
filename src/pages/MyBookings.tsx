@@ -3,13 +3,14 @@ import API from "../api";
 import { AuthContext } from "../context/AuthContext";
 import Swal from "sweetalert2";
 import BookingCard from "../components/BookingCard";
-import { openMockPaymentModal } from "../utils/paymentModal";
+import { startPayhereCheckout } from "../utils/payhereCheckout";
+import { PAYHERE_NOTIFY_URL } from "../utils/payhereConfig";
 import type { Booking } from "../types";
 
 const MyBookings: React.FC = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
-  const { token } = useContext(AuthContext);
+  const { token, email } = useContext(AuthContext);
 
   const fetchMyBookings = async () => {
     try {
@@ -31,21 +32,36 @@ const MyBookings: React.FC = () => {
     fetchMyBookings();
   }, [token]);
 
-  const handlePayNow = async (booking: Booking) => {
-    const success = await openMockPaymentModal(
-      booking.bookingId,
-      booking.eventTitle,
-      booking.totalAmount,
-      {
-        cancelButtonText: "Cancel",
-        successMessage: "Your payment has been processed.",
-        errorTitle: "Error",
+  const handlePayNow = (booking: Booking) => {
+    startPayhereCheckout({
+      orderId: booking.orderId,
+      merchantId: booking.merchantId,
+      hash: booking.hash || "",
+      amount: booking.totalAmount,
+      currency: booking.currency,
+      eventTitle: booking.eventTitle,
+      customerFirstName: email?.split("@")[0] || "Guest",
+      customerEmail: email || "guest@example.com",
+      notifyUrl: PAYHERE_NOTIFY_URL,
+      onCompleted: () => {
+        Swal.fire(
+          "Payment Successful!",
+          "Your payment has been processed.",
+          "success",
+        );
+        fetchMyBookings();
       },
-    );
-
-    if (success) {
-      fetchMyBookings();
-    }
+      onDismissed: () => {
+        Swal.fire(
+          "Payment Cancelled",
+          "You closed the payment window.",
+          "info",
+        );
+      },
+      onError: (error) => {
+        Swal.fire("Payment Error", error, "error");
+      },
+    });
   };
 
   const handleCancelBooking = async (bookingId: number) => {
