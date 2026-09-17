@@ -8,8 +8,9 @@ import EventBookingCard from "../components/EventBookingCard";
 import EventLocationMap from "../components/EventLocationMap";
 import EventTransportLinks from "../components/EventTransportLinks";
 import EventPolicies from "../components/EventPolicies";
+import TicketSelectionModal from "../components/TicketSelectionModal";
 import { openMockPaymentModal } from "../utils/paymentModal";
-import type { Event } from "../types";
+import type { Event, TicketTier } from "../types";
 
 const EventDetails: React.FC = () => {
   const { id } = useParams();
@@ -17,7 +18,9 @@ const EventDetails: React.FC = () => {
   const { token } = useContext(AuthContext);
 
   const [event, setEvent] = useState<Event | null>(null);
+  const [tiers, setTiers] = useState<TicketTier[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showTierModal, setShowTierModal] = useState(false);
 
   const fetchEvent = async () => {
     try {
@@ -30,11 +33,21 @@ const EventDetails: React.FC = () => {
     }
   };
 
+  const fetchTiers = async () => {
+    try {
+      const response = await API.get(`/events/${id}/tiers`);
+      setTiers(response.data.data || []);
+    } catch (error) {
+      console.error("Failed to fetch tiers:", error);
+    }
+  };
+
   useEffect(() => {
     fetchEvent();
+    fetchTiers();
   }, [id]);
 
-  const handleBookTicket = async () => {
+  const handleSimpleBooking = async () => {
     if (!event) return;
 
     if (!token) {
@@ -98,6 +111,69 @@ const EventDetails: React.FC = () => {
     }
   };
 
+  const handleGetTicketsClick = () => {
+    if (tiers.length > 0) {
+      setShowTierModal(true);
+    } else {
+      handleSimpleBooking();
+    }
+  };
+
+  const handleTierCheckout = async (
+    selections: { tierId: number; quantity: number }[],
+  ) => {
+    if (!event || selections.length === 0) return;
+
+    if (!token) {
+      Swal.fire({
+        icon: "warning",
+        title: "Please Login",
+        text: "You need to be logged in to book tickets!",
+      });
+      navigate("/login");
+      return;
+    }
+
+    let userId = 1;
+    try {
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      userId = payload.userId || payload.id || 1;
+    } catch (e) {
+      console.error(e);
+    }
+
+    const selection = selections[0]; // single tier per booking, kept simple
+
+    try {
+      const response = await API.post("/bookings", {
+        userId,
+        eventId: event.id,
+        ticketCount: selection.quantity,
+        tierId: selection.tierId,
+      });
+
+      const bookingData = response.data.data;
+
+      setShowTierModal(false);
+
+      await openMockPaymentModal(
+        bookingData.bookingId,
+        bookingData.eventTitle,
+        bookingData.totalAmount,
+      );
+
+      fetchEvent();
+      fetchTiers();
+      navigate("/my-bookings");
+    } catch (error: any) {
+      Swal.fire({
+        icon: "error",
+        title: "Booking Failed",
+        text: error.response?.data?.message || "Failed to complete booking.",
+      });
+    }
+  };
+
   if (loading) {
     return (
       <div className="text-center mt-12 text-slate-600 font-semibold">
@@ -157,8 +233,21 @@ const EventDetails: React.FC = () => {
           <EventTransportLinks />
         </div>
 
-        <EventBookingCard event={event} onBookClick={handleBookTicket} />
+        <EventBookingCard
+          event={event}
+          tiers={tiers}
+          onGetTickets={handleGetTicketsClick}
+        />
       </div>
+
+      {showTierModal && (
+        <TicketSelectionModal
+          event={event}
+          tiers={tiers}
+          onClose={() => setShowTierModal(false)}
+          onCheckout={handleTierCheckout}
+        />
+      )}
     </div>
   );
 };

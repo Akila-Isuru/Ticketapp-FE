@@ -18,11 +18,20 @@ export interface Event {
   subCategory?: string;
 }
 
+export interface TicketTier {
+  id: number;
+  name: string;
+  price: number;
+  totalCount: number;
+  availableCount: number;
+}
+
 export interface Booking {
   bookingId: number;
   orderId: string;
   merchantId: string;
   eventTitle: string;
+  tierName?: string;
   ticketCount: number;
   totalAmount: number;
   currency: string;

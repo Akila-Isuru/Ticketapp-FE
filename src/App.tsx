@@ -8,7 +8,7 @@ import Register from "./pages/Register";
 import AdminDashboard from "./pages/AdminDashboard";
 import MyBookings from "./pages/MyBookings";
 import EventDetails from "./pages/EventDetails";
-
+import AdminTierManagement from "./pages/AdminTierManagement";
 const App: React.FC = () => {
   return (
     <Router>
@@ -22,6 +22,10 @@ const App: React.FC = () => {
             <Route path="/my-bookings" element={<MyBookings />} />
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/events/:id" element={<EventDetails />} />
+            <Route
+              path="/admin/events/:eventId/tiers"
+              element={<AdminTierManagement />}
+            />
           </Routes>
         </main>
         <Footer />

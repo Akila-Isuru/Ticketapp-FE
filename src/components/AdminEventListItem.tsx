@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Calendar,
   MapPin,
@@ -7,6 +8,7 @@ import {
   Pencil,
   Trash2,
   Tag,
+  Layers,
 } from "lucide-react";
 import type { Event } from "../types";
 
@@ -29,6 +31,7 @@ const AdminEventListItem: React.FC<AdminEventListItemProps> = ({
   onEdit,
   onDelete,
 }) => {
+  const navigate = useNavigate();
   const categoryLabel = CATEGORY_LABELS[event.category] || event.category;
 
   return (
@@ -75,6 +78,13 @@ const AdminEventListItem: React.FC<AdminEventListItemProps> = ({
       </div>
 
       <div className="flex items-center gap-2 flex-shrink-0">
+        <button
+          onClick={() => navigate(`/admin/events/${event.id}/tiers`)}
+          className="flex items-center gap-1 px-3 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-md text-xs font-medium transition cursor-pointer"
+          title="Manage ticket tiers"
+        >
+          <Layers className="w-3.5 h-3.5" /> Tiers
+        </button>
         <button
           onClick={() => onEdit(event)}
           className="p-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-md transition cursor-pointer"

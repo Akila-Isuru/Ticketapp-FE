@@ -1,16 +1,24 @@
 import React from "react";
-import { DollarSign, Ticket, Calendar, Crown } from "lucide-react";
+import { Ticket, Calendar, Crown } from "lucide-react";
 import CountdownTimer from "./CountdownTimer";
-import type { Event } from "../types";
+import type { Event, TicketTier } from "../types";
 
 interface EventBookingCardProps {
   event: Event;
-  onBookClick: () => void;
+  tiers: TicketTier[];
+  onGetTickets: () => void;
 }
+
+const CATEGORY_LABELS: Record<string, string> = {
+  CONCERT: "Concert",
+  THEATRE: "Theatre",
+  SPORTS: "Sports",
+};
 
 const EventBookingCard: React.FC<EventBookingCardProps> = ({
   event,
-  onBookClick,
+  tiers,
+  onGetTickets,
 }) => {
   const formattedDate = new Date(event.eventDate).toLocaleDateString("en-US", {
     day: "2-digit",
@@ -21,6 +29,20 @@ const EventBookingCard: React.FC<EventBookingCardProps> = ({
     hour: "2-digit",
     minute: "2-digit",
   });
+
+  const categoryLabel = CATEGORY_LABELS[event.category] || event.category;
+
+  // If the event has ticket tiers, show the cheapest tier's price.
+  // Otherwise fall back to the event's own single ticket price.
+  const startingPrice =
+    tiers.length > 0
+      ? Math.min(...tiers.map((t) => t.price))
+      : event.ticketPrice;
+
+  const soldOut =
+    tiers.length > 0
+      ? tiers.every((t) => t.availableCount <= 0)
+      : event.availableTickets <= 0;
 
   return (
     <div className="bg-white rounded-xl shadow-md border border-gray-200 p-6 h-fit sticky top-24">
@@ -38,7 +60,7 @@ const EventBookingCard: React.FC<EventBookingCardProps> = ({
         <span className="text-slate-800 font-medium">{formattedTime}</span>
         <span className="w-px h-4 bg-gray-200" />
         <span className="bg-indigo-50 text-indigo-600 text-xs font-medium px-2.5 py-1 rounded-full">
-          Concert
+          {categoryLabel}
         </span>
       </div>
 
@@ -49,18 +71,22 @@ const EventBookingCard: React.FC<EventBookingCardProps> = ({
         </span>
       </div>
 
-      <div className="flex items-center gap-1 text-2xl font-bold text-indigo-600 mb-5">
-        <DollarSign className="w-6 h-6" />
-        <span>{event.ticketPrice}</span>
-        <span className="text-sm font-normal text-gray-500 ml-1">/ ticket</span>
+      <div className="mb-5">
+        <p className="text-sm text-gray-500">Price</p>
+        <div className="flex items-baseline gap-2">
+          <span className="text-2xl font-bold text-indigo-600">
+            LKR {startingPrice.toLocaleString()}
+          </span>
+          <span className="text-sm font-normal text-gray-500">onwards</span>
+        </div>
       </div>
 
       <button
-        onClick={onBookClick}
-        disabled={event.availableTickets <= 0}
+        onClick={onGetTickets}
+        disabled={soldOut}
         className="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium px-6 py-3 rounded-lg transition disabled:bg-gray-300 disabled:cursor-not-allowed cursor-pointer"
       >
-        {event.availableTickets > 0 ? "Get Tickets" : "Sold Out"}
+        {soldOut ? "Sold Out" : "Get Tickets"}
       </button>
     </div>
   );
