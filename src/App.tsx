@@ -9,6 +9,8 @@ import AdminDashboard from "./pages/AdminDashboard";
 import MyBookings from "./pages/MyBookings";
 import EventDetails from "./pages/EventDetails";
 import AdminTierManagement from "./pages/AdminTierManagement";
+import CategoryEventsPage from "./pages/CategoryEventsPage";
+
 const App: React.FC = () => {
   return (
     <Router>
@@ -25,6 +27,10 @@ const App: React.FC = () => {
             <Route
               path="/admin/events/:eventId/tiers"
               element={<AdminTierManagement />}
+            />
+            <Route
+              path="/category/:categoryKey"
+              element={<CategoryEventsPage />}
             />
           </Routes>
         </main>

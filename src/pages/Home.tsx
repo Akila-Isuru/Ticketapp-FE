@@ -3,17 +3,20 @@ import API from "../api";
 import { AuthContext } from "../context/AuthContext";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
-import EventCard from "../components/EventCard";
 import Hero from "../components/Hero";
 import SearchBar from "../components/SearchBar";
 import RecentlyViewedSection from "../components/RecentlyViewedSection";
+import CategorySection from "../components/CategorySection";
+import EventCard from "../components/EventCard";
 import { openMockPaymentModal } from "../utils/paymentModal";
 import type { Event } from "../types";
+import FeaturedCarousel from "../components/FeaturedCarousel";
 
 function Home() {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [searchWord, setSearchWord] = useState("");
+  const [searchResults, setSearchResults] = useState<Event[] | null>(null);
   const { token } = useContext(AuthContext);
   const navigate = useNavigate();
 
@@ -41,14 +44,14 @@ function Home() {
     e.preventDefault();
 
     if (!searchWord.trim()) {
-      fetchEvents();
+      setSearchResults(null);
       return;
     }
 
     setLoading(true);
     try {
       const response = await API.get(`/events/search?word=${searchWord}`);
-      setEvents(response.data.data || []);
+      setSearchResults(response.data.data || []);
     } catch (error) {
       console.error("Search failed:", error);
     } finally {
@@ -58,7 +61,7 @@ function Home() {
 
   const handleClearSearch = () => {
     setSearchWord("");
-    fetchEvents();
+    setSearchResults(null);
   };
 
   const handleBookTicket = async (event: Event) => {
@@ -128,6 +131,7 @@ function Home() {
       <Hero />
 
       <RecentlyViewedSection />
+      <FeaturedCarousel />
 
       <div id="events-section">
         <h1 className="text-3xl font-bold text-slate-800 mb-6 text-center">
@@ -145,16 +149,36 @@ function Home() {
           <div className="text-center mt-12 text-slate-600 font-semibold">
             Loading Events...
           </div>
-        ) : events.length === 0 ? (
-          <p className="text-center text-gray-500">
-            No events found at the moment.
-          </p>
+        ) : searchResults !== null ? (
+          searchResults.length === 0 ? (
+            <p className="text-center text-gray-500">
+              No events found for your search.
+            </p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {searchResults.map((evt) => (
+                <EventCard key={evt.id} event={evt} />
+              ))}
+            </div>
+          )
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {events.map((evt) => (
-              <EventCard key={evt.id} event={evt} />
-            ))}
-          </div>
+          <>
+            <CategorySection
+              title="Concerts"
+              categoryKey="CONCERT"
+              events={events}
+            />
+            <CategorySection
+              title="Theatre"
+              categoryKey="THEATRE"
+              events={events}
+            />
+            <CategorySection
+              title="Sports"
+              categoryKey="SPORTS"
+              events={events}
+            />
+          </>
         )}
       </div>
     </div>
