@@ -11,6 +11,7 @@ import EventPolicies from "../components/EventPolicies";
 import TicketSelectionModal from "../components/TicketSelectionModal";
 import { startPayhereCheckout } from "../utils/payhereCheckout";
 import { PAYHERE_NOTIFY_URL } from "../utils/payhereConfig";
+import { addRecentlyViewed } from "../utils/recentlyViewed";
 import type { Event, TicketTier } from "../types";
 
 const EventDetails: React.FC = () => {
@@ -46,6 +47,7 @@ const EventDetails: React.FC = () => {
   useEffect(() => {
     fetchEvent();
     fetchTiers();
+    if (id) addRecentlyViewed(Number(id));
   }, [id]);
 
   const payForBooking = (bookingData: any) => {
@@ -169,7 +171,7 @@ const EventDetails: React.FC = () => {
       console.error(e);
     }
 
-    const selection = selections[0]; 
+    const selection = selections[0];
 
     try {
       const response = await API.post("/bookings", {

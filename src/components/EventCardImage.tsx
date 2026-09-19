@@ -8,7 +8,7 @@ interface EventCardImageProps {
 
 const EventCardImage: React.FC<EventCardImageProps> = ({ imageUrl, title }) => {
   return (
-    <div className="relative w-full h-44 bg-gray-100">
+    <div className="relative w-full h-64 bg-gray-100">
       {imageUrl ? (
         <img
           src={imageUrl}

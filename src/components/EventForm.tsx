@@ -18,6 +18,7 @@ interface EventFormProps {
   ticketPrice: string;
   totalTickets: string;
   imageUrl: string;
+  cardImageUrl: string;
   category: string;
   subCategory: string;
   editingId: number | null;
@@ -28,13 +29,13 @@ interface EventFormProps {
   onTicketPriceChange: (v: string) => void;
   onTotalTicketsChange: (v: string) => void;
   onImageUrlChange: (v: string) => void;
+  onCardImageUrlChange: (v: string) => void;
   onCategoryChange: (v: string) => void;
   onSubCategoryChange: (v: string) => void;
   onSubmit: (e: React.FormEvent) => void;
   onCancelEdit: () => void;
 }
 
-// Sub-category options shown only when "Concert" is selected as the category
 const CONCERT_SUBCATEGORIES = [
   "Indoor Musical Concert",
   "Outdoor Musical Concert",
@@ -48,6 +49,7 @@ const EventForm: React.FC<EventFormProps> = ({
   ticketPrice,
   totalTickets,
   imageUrl,
+  cardImageUrl,
   category,
   subCategory,
   editingId,
@@ -58,27 +60,33 @@ const EventForm: React.FC<EventFormProps> = ({
   onTicketPriceChange,
   onTotalTicketsChange,
   onImageUrlChange,
+  onCardImageUrlChange,
   onCategoryChange,
   onSubCategoryChange,
   onSubmit,
   onCancelEdit,
 }) => {
-  const [uploading, setUploading] = useState(false);
+  const [uploadingBanner, setUploadingBanner] = useState(false);
+  const [uploadingCard, setUploadingCard] = useState(false);
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
+  const uploadFile = async (file: File): Promise<string> => {
     const formData = new FormData();
     formData.append("file", file);
 
-    setUploading(true);
-    try {
-      const response = await API.post("/events/upload-image", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+    const response = await API.post("/events/upload-image", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
 
-      const uploadedUrl = response.data.data;
+    return response.data.data;
+  };
+
+  const handleBannerChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingBanner(true);
+    try {
+      const uploadedUrl = await uploadFile(file);
       onImageUrlChange(uploadedUrl);
     } catch (error: any) {
       Swal.fire({
@@ -87,15 +95,37 @@ const EventForm: React.FC<EventFormProps> = ({
         text: error.response?.data?.message || "Something went wrong!",
       });
     } finally {
-      setUploading(false);
+      setUploadingBanner(false);
+    }
+  };
+
+  const handleCardImageChange = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingCard(true);
+    try {
+      const uploadedUrl = await uploadFile(file);
+      onCardImageUrlChange(uploadedUrl);
+    } catch (error: any) {
+      Swal.fire({
+        icon: "error",
+        title: "Image Upload Failed",
+        text: error.response?.data?.message || "Something went wrong!",
+      });
+    } finally {
+      setUploadingCard(false);
     }
   };
 
   const handleCategoryChange = (value: string) => {
     onCategoryChange(value);
-    // Reset sub-category whenever the main category changes
     onSubCategoryChange("");
   };
+
+  const isUploading = uploadingBanner || uploadingCard;
 
   return (
     <div className="bg-white p-6 rounded-xl shadow-md border border-gray-200 h-fit">
@@ -228,18 +258,18 @@ const EventForm: React.FC<EventFormProps> = ({
 
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-1 flex items-center gap-1">
-            <Image className="w-3.5 h-3.5" /> Event Image
+            <Image className="w-3.5 h-3.5" /> Banner Image (Event Details Page)
           </label>
 
           <label
-            htmlFor="event-image-upload"
+            htmlFor="event-banner-upload"
             className={`flex flex-col items-center justify-center gap-2 w-full border-2 border-dashed rounded-md py-6 cursor-pointer transition ${
-              uploading
+              uploadingBanner
                 ? "border-indigo-300 bg-indigo-50"
                 : "border-gray-300 hover:border-indigo-400 hover:bg-indigo-50"
             }`}
           >
-            {uploading ? (
+            {uploadingBanner ? (
               <>
                 <Loader2 className="w-5 h-5 text-indigo-600 animate-spin" />
                 <span className="text-xs text-indigo-600 font-medium">
@@ -250,25 +280,73 @@ const EventForm: React.FC<EventFormProps> = ({
               <>
                 <Upload className="w-5 h-5 text-gray-400" />
                 <span className="text-xs text-gray-500">
-                  Click to upload an image
+                  Click to upload wide banner image
                 </span>
               </>
             )}
             <input
-              id="event-image-upload"
+              id="event-banner-upload"
               type="file"
               accept="image/*"
-              onChange={handleFileChange}
+              onChange={handleBannerChange}
               className="hidden"
             />
           </label>
 
-          {imageUrl && !uploading && (
+          {imageUrl && !uploadingBanner && (
             <div className="mt-3">
               <img
                 src={imageUrl}
-                alt="Event preview"
+                alt="Banner preview"
                 className="w-full h-32 rounded-md object-cover border border-gray-200"
+              />
+            </div>
+          )}
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-1 flex items-center gap-1">
+            <Image className="w-3.5 h-3.5" /> Card Image (Home Page Listing)
+          </label>
+
+          <label
+            htmlFor="event-card-image-upload"
+            className={`flex flex-col items-center justify-center gap-2 w-full border-2 border-dashed rounded-md py-6 cursor-pointer transition ${
+              uploadingCard
+                ? "border-indigo-300 bg-indigo-50"
+                : "border-gray-300 hover:border-indigo-400 hover:bg-indigo-50"
+            }`}
+          >
+            {uploadingCard ? (
+              <>
+                <Loader2 className="w-5 h-5 text-indigo-600 animate-spin" />
+                <span className="text-xs text-indigo-600 font-medium">
+                  Uploading...
+                </span>
+              </>
+            ) : (
+              <>
+                <Upload className="w-5 h-5 text-gray-400" />
+                <span className="text-xs text-gray-500">
+                  Click to upload portrait card image
+                </span>
+              </>
+            )}
+            <input
+              id="event-card-image-upload"
+              type="file"
+              accept="image/*"
+              onChange={handleCardImageChange}
+              className="hidden"
+            />
+          </label>
+
+          {cardImageUrl && !uploadingCard && (
+            <div className="mt-3">
+              <img
+                src={cardImageUrl}
+                alt="Card preview"
+                className="w-32 h-44 rounded-md object-cover border border-gray-200 mx-auto"
               />
             </div>
           )}
@@ -276,7 +354,7 @@ const EventForm: React.FC<EventFormProps> = ({
 
         <button
           type="submit"
-          disabled={loading || uploading || !imageUrl}
+          disabled={loading || isUploading || !imageUrl || !cardImageUrl}
           className={`w-full text-white font-medium py-2 rounded-md transition cursor-pointer text-sm mt-2 ${
             editingId
               ? "bg-orange-500 hover:bg-orange-600 disabled:bg-orange-300"

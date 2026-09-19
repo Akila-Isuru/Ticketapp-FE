@@ -12,6 +12,7 @@ const AdminDashboard: React.FC = () => {
   const [ticketPrice, setTicketPrice] = useState("");
   const [totalTickets, setTotalTickets] = useState("");
   const [imageUrl, setImageUrl] = useState("");
+  const [cardImageUrl, setCardImageUrl] = useState("");
   const [eventDate, setEventDate] = useState("");
   const [category, setCategory] = useState("");
   const [subCategory, setSubCategory] = useState("");
@@ -44,6 +45,7 @@ const AdminDashboard: React.FC = () => {
     setTicketPrice("");
     setTotalTickets("");
     setImageUrl("");
+    setCardImageUrl("");
     setEventDate("");
     setCategory("");
     setSubCategory("");
@@ -60,6 +62,7 @@ const AdminDashboard: React.FC = () => {
       ticketPrice: parseFloat(ticketPrice),
       totalTickets: parseInt(totalTickets, 10),
       imageUrl,
+      cardImageUrl,
       eventDate,
       category,
       subCategory: category === "CONCERT" ? subCategory : "",
@@ -105,6 +108,7 @@ const AdminDashboard: React.FC = () => {
     setTicketPrice(evt.ticketPrice.toString());
     setTotalTickets(evt.totalTickets.toString());
     setImageUrl(evt.imageUrl);
+    setCardImageUrl(evt.cardImageUrl || "");
     setEventDate(evt.eventDate ? evt.eventDate.slice(0, 16) : "");
     setCategory(evt.category || "");
     setSubCategory(evt.subCategory || "");
@@ -155,6 +159,7 @@ const AdminDashboard: React.FC = () => {
           ticketPrice={ticketPrice}
           totalTickets={totalTickets}
           imageUrl={imageUrl}
+          cardImageUrl={cardImageUrl}
           category={category}
           subCategory={subCategory}
           editingId={editingId}
@@ -165,6 +170,7 @@ const AdminDashboard: React.FC = () => {
           onTicketPriceChange={setTicketPrice}
           onTotalTicketsChange={setTotalTickets}
           onImageUrlChange={setImageUrl}
+          onCardImageUrlChange={setCardImageUrl}
           onCategoryChange={setCategory}
           onSubCategoryChange={setSubCategory}
           onSubmit={handleSubmit}

@@ -13,6 +13,7 @@ export interface Event {
   totalTickets: number;
   availableTickets: number;
   imageUrl: string;
+  cardImageUrl: string;
   eventDate: string;
   category: string;
   subCategory?: string;

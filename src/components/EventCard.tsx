@@ -31,7 +31,10 @@ const EventCard: React.FC<EventCardProps> = ({ event }) => {
       onClick={handleCardClick}
       className="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-md hover:border-indigo-200 transition cursor-pointer overflow-hidden flex flex-col"
     >
-      <EventCardImage imageUrl={event.imageUrl} title={event.title} />
+      <EventCardImage
+        imageUrl={event.cardImageUrl || event.imageUrl}
+        title={event.title}
+      />
 
       <div className="p-4">
         <h2 className="text-lg font-bold text-slate-800 mb-1">{event.title}</h2>

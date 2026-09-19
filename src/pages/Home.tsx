@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import EventCard from "../components/EventCard";
 import Hero from "../components/Hero";
 import SearchBar from "../components/SearchBar";
+import RecentlyViewedSection from "../components/RecentlyViewedSection";
 import { openMockPaymentModal } from "../utils/paymentModal";
 import type { Event } from "../types";
 
@@ -125,6 +126,8 @@ function Home() {
   return (
     <div className="max-w-6xl mx-auto my-8">
       <Hero />
+
+      <RecentlyViewedSection />
 
       <div id="events-section">
         <h1 className="text-3xl font-bold text-slate-800 mb-6 text-center">
