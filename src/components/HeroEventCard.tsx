@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Clock } from "lucide-react";
+import { Clock, Star } from "lucide-react";
 import type { Event } from "../types";
 
 interface HeroEventCardProps {
@@ -33,46 +33,81 @@ const useCountdown = (eventDate: string) => {
 const HeroEventCard: React.FC<HeroEventCardProps> = ({ event }) => {
   const countdown = useCountdown(event.eventDate);
 
-  const formattedDate = new Date(event.eventDate).toLocaleDateString("en-US", {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-    year: "numeric",
+  const formattedDate = new Date(event.eventDate)
+    .toLocaleDateString("en-US", {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    })
+    .toUpperCase();
+
+  const formattedTime = new Date(event.eventDate).toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
   });
+
+  const priceNumber = Number(event.ticketPrice) || 0;
 
   return (
     <div className="relative w-full max-w-sm">
-      <img
-        src={event.imageUrl}
-        alt={event.title}
-        className="w-full aspect-square object-cover rounded-2xl shadow-xl"
-      />
+      <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-100">
+        {/* ---- Image area ---- */}
+        <div className="relative aspect-square">
+          <img
+            src={event.cardImageUrl || event.imageUrl}
+            alt={event.title}
+            className="w-full h-full object-cover"
+          />
 
-      <div className="absolute top-4 left-4 bg-white rounded-xl shadow-md px-3 py-2 flex items-center gap-2">
-        <span className="bg-orange-500 text-white p-1.5 rounded-lg">
-          <Clock className="w-4 h-4" />
-        </span>
-        <div>
-          <p className="text-[10px] text-gray-400 uppercase tracking-wide">
-            Starts in
-          </p>
-          <p className="text-sm font-bold text-slate-800">{countdown}</p>
+          {/* Countdown pill */}
+          <div className="absolute top-4 left-4 bg-white rounded-xl shadow-md px-3 py-2 flex items-center gap-2.5">
+            <span className="bg-orange-500 text-white p-1.5 rounded-lg flex items-center justify-center">
+              <Clock className="w-4 h-4" />
+            </span>
+            <div>
+              <p className="text-[10px] text-slate-400 uppercase tracking-widest font-medium">
+                Starts in
+              </p>
+              <p className="text-sm font-bold text-slate-800 leading-tight">
+                {countdown}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* ---- Info area ---- */}
+        <div className="px-5 py-4 flex items-end justify-between gap-3">
+          <div className="min-w-0">
+            <p className="text-[11px] text-slate-400 tracking-wide font-medium">
+              {formattedDate}
+            </p>
+            <p className="font-semibold text-slate-900 text-[15px] truncate mt-0.5">
+              {event.location}
+            </p>
+            <p className="text-xs text-slate-400 mt-0.5">
+              Doors {formattedTime}
+            </p>
+          </div>
+          <div className="text-right shrink-0">
+            <p className="text-[10px] text-slate-400 tracking-widest font-medium">
+              FROM
+            </p>
+            <p className="text-lg font-bold text-slate-900 font-serif leading-tight">
+              LKR{" "}
+              {priceNumber.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
+            </p>
+          </div>
         </div>
       </div>
 
-      <div className="absolute bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm rounded-b-2xl px-4 py-3">
-        <p className="text-xs text-gray-400">{formattedDate}</p>
-        <p className="font-bold text-slate-800 text-sm">{event.location}</p>
-        <div className="flex items-end justify-between mt-1">
-          <span className="text-[10px] text-gray-400">FROM</span>
-          <span className="text-lg font-bold text-indigo-600">
-            LKR {event.ticketPrice.toLocaleString()}
-          </span>
-        </div>
-      </div>
-
-      <span className="absolute -bottom-3 right-4 bg-orange-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-md">
-        ★ Now Trending
+      {/* Trending ribbon (outside card, rotated) */}
+      <span className="absolute -top-3 -right-3 bg-orange-500 text-white text-xs font-semibold px-3.5 py-2 rounded-full shadow-lg flex items-center gap-1.5 rotate-[8deg] whitespace-nowrap">
+        <Star className="w-3.5 h-3.5 fill-current" />
+        Now Trending
       </span>
     </div>
   );

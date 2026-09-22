@@ -1,22 +1,26 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, ShieldCheck, Zap, Headphones } from "lucide-react";
+import { ShieldCheck, Zap, Headphones, Play } from "lucide-react";
 import API from "../api";
-import HeroBackground from "./HeroBackground";
-import HeroEventBadge from "./HeroEventBadge";
-import HeroProgressDots from "./HeroProgressDots";
+import HeroEventStack from "./HeroEventStack";
+import HeroTagline from "./HeroTagline";
 import type { Event } from "../types";
 
 const Hero: React.FC = () => {
   const navigate = useNavigate();
   const [events, setEvents] = useState<Event[]>([]);
-  const [activeIndex, setActiveIndex] = useState(0);
+  const [order, setOrder] = useState<number[]>([]);
+  const [swapping, setSwapping] = useState(false);
+  const [taglineIndex, setTaglineIndex] = useState(0);
+  const swapTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     const fetchEvents = async () => {
       try {
         const response = await API.get("/events");
-        setEvents((response.data.data || []).slice(0, 5));
+        const fetched: Event[] = (response.data.data || []).slice(0, 5);
+        setEvents(fetched);
+        setOrder(fetched.map((_, i) => i));
       } catch (error) {
         console.error("Failed to fetch events for hero:", error);
       }
@@ -26,10 +30,21 @@ const Hero: React.FC = () => {
 
   useEffect(() => {
     if (events.length <= 1) return;
-    const timer = setInterval(() => {
-      setActiveIndex((prev) => (prev + 1) % events.length);
-    }, 3000);
-    return () => clearInterval(timer);
+
+    const interval = setInterval(() => {
+      setSwapping(true);
+      setTaglineIndex((prev) => (prev + 1) % 4);
+
+      swapTimeout.current = setTimeout(() => {
+        setOrder((prev) => [...prev.slice(1), prev[0]]);
+        setSwapping(false);
+      }, 300);
+    }, 2200);
+
+    return () => {
+      clearInterval(interval);
+      if (swapTimeout.current) clearTimeout(swapTimeout.current);
+    };
   }, [events.length]);
 
   const scrollToEvents = () => {
@@ -39,73 +54,59 @@ const Hero: React.FC = () => {
     }
   };
 
-  const activeEvent = events[activeIndex];
-
   return (
-    <div
-      className="relative w-screen h-[85vh] min-h-[560px] mb-10 overflow-hidden"
-      style={{
-        marginLeft: "calc(50% - 50vw)",
-        marginRight: "calc(50% - 50vw)",
-      }}
-    >
-      {activeEvent && (
-        <HeroBackground events={events} activeIndex={activeIndex} />
-      )}
+    <section className="bg-gradient-to-b from-slate-50 via-white to-white py-20 px-6 mb-10">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-14 items-center max-w-6xl mx-auto">
+        {/* ---- LEFT: text content ---- */}
+        <div className="animate-hero-fade-up">
+          <HeroTagline index={taglineIndex} />
 
-      {!activeEvent && (
-        <div className="absolute inset-0 bg-gradient-to-br from-indigo-900 via-slate-900 to-slate-800" />
-      )}
-
-      <div className="relative h-full flex flex-col justify-between p-8 md:p-16 max-w-6xl mx-auto">
-        <div className="animate-hero-title mt-8 md:mt-16">
-          <h1 className="text-5xl md:text-7xl font-bold text-white leading-tight mb-5 max-w-2xl">
-            Your next <span className="italic text-orange-400">show</span>{" "}
-            starts here.
-          </h1>
-
-          <p className="text-white/80 text-lg md:text-xl max-w-lg mb-8">
-            Sri Lanka's home for live music. Discover what's on and lock in your
-            seat in seconds.
+          <p className="text-slate-500 text-base md:text-lg max-w-xl mb-9 leading-relaxed">
+            Sri Lanka's home for live music, theatre, and the moments in
+            between. Discover what's on, lock in your seat in seconds.
           </p>
 
-          <button
-            onClick={scrollToEvents}
-            className="group inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-medium px-7 py-3.5 rounded-lg transition cursor-pointer text-base"
-          >
-            Browse Events
-            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-          </button>
+          <div className="flex flex-wrap items-center gap-4 mb-10">
+            <button
+              onClick={scrollToEvents}
+              className="group inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold px-7 py-3.5 rounded-lg transition shadow-sm hover:shadow-md cursor-pointer"
+            >
+              Browse all events
+              <span className="transition-transform group-hover:translate-x-0.5 text-lg leading-none">
+                ›
+              </span>
+            </button>
 
-          <div className="flex flex-wrap items-center gap-6 mt-10 text-white/70 text-sm">
-            <span className="flex items-center gap-1.5">
-              <ShieldCheck className="w-4 h-4 text-orange-400" /> Secure
-              Payments
+            <button
+              onClick={scrollToEvents}
+              className="inline-flex items-center gap-2.5 bg-white hover:bg-slate-50 text-slate-700 font-medium px-6 py-3.5 rounded-lg border border-slate-200 transition cursor-pointer"
+            >
+              <span className="w-6 h-6 rounded-full bg-orange-500 flex items-center justify-center shrink-0">
+                <Play className="w-3 h-3 text-white fill-current" />
+              </span>
+              View event
+            </button>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-x-7 gap-y-3 text-sm text-slate-500">
+            <span className="inline-flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-indigo-400" />
+              Secure Payments
             </span>
-            <span className="flex items-center gap-1.5">
-              <Zap className="w-4 h-4 text-orange-400" /> Instant Delivery
+            <span className="inline-flex items-center gap-2">
+              <Zap className="w-4 h-4 text-indigo-400" />
+              Instant Ticket Delivery
             </span>
-            <span className="flex items-center gap-1.5">
-              <Headphones className="w-4 h-4 text-orange-400" /> 24/7 Support
+            <span className="inline-flex items-center gap-2">
+              <Headphones className="w-4 h-4 text-indigo-400" />
+              24/7 Support
             </span>
           </div>
         </div>
 
-        {activeEvent && (
-          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-8">
-            <HeroEventBadge event={activeEvent} />
-
-            {events.length > 1 && (
-              <HeroProgressDots
-                count={events.length}
-                activeIndex={activeIndex}
-                onSelect={setActiveIndex}
-              />
-            )}
-          </div>
-        )}
+        <HeroEventStack order={order} events={events} swapping={swapping} />
       </div>
-    </div>
+    </section>
   );
 };
 
