@@ -113,6 +113,41 @@ const MyBookings: React.FC = () => {
     }
   };
 
+  const handleTransfer = async (booking: Booking) => {
+    const { value: newOwnerEmail } = await Swal.fire({
+      title: "Transfer Ticket",
+      text: `Enter the registered email of the person you want to transfer "${booking.eventTitle}" to.`,
+      input: "email",
+      inputPlaceholder: "friend@example.com",
+      showCancelButton: true,
+      confirmButtonText: "Transfer",
+      confirmButtonColor: "#4f46e5",
+      inputValidator: (value) => {
+        if (!value) return "Please enter an email address";
+      },
+    });
+
+    if (newOwnerEmail) {
+      try {
+        await API.put(`/bookings/transfer/${booking.bookingId}`, {
+          newOwnerEmail,
+        });
+        Swal.fire(
+          "Ticket Transferred!",
+          `The ticket has been transferred to ${newOwnerEmail}.`,
+          "success",
+        );
+        fetchMyBookings();
+      } catch (error: any) {
+        Swal.fire(
+          "Transfer Failed",
+          error.response?.data?.message || "Something went wrong.",
+          "error",
+        );
+      }
+    }
+  };
+
   if (loading) {
     return (
       <div className="text-center mt-12 text-slate-600 font-semibold">
@@ -138,6 +173,7 @@ const MyBookings: React.FC = () => {
               onPayNow={handlePayNow}
               onCancel={handleCancelBooking}
               onViewQRCode={handleViewQRCode}
+              onTransfer={handleTransfer}
             />
           ))}
         </div>

@@ -6,6 +6,7 @@ import {
   CheckCircle,
   Clock,
   QrCode,
+  Send,
 } from "lucide-react";
 import type { Booking } from "../types";
 
@@ -14,6 +15,7 @@ interface BookingCardProps {
   onPayNow: (booking: Booking) => void;
   onCancel: (bookingId: number) => void;
   onViewQRCode: (booking: Booking) => void;
+  onTransfer: (booking: Booking) => void;
 }
 
 const BookingCard: React.FC<BookingCardProps> = ({
@@ -21,6 +23,7 @@ const BookingCard: React.FC<BookingCardProps> = ({
   onPayNow,
   onCancel,
   onViewQRCode,
+  onTransfer,
 }) => {
   return (
     <div className="bg-white p-6 rounded-xl shadow-md border border-gray-200 flex flex-col md:flex-row justify-between md:items-center gap-4">
@@ -75,12 +78,21 @@ const BookingCard: React.FC<BookingCardProps> = ({
         )}
 
         {booking.paymentStatus === "PAID" && (
-          <button
-            onClick={() => onViewQRCode(booking)}
-            className="flex items-center gap-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 border border-indigo-200 px-4 py-2 rounded-lg text-sm font-medium transition cursor-pointer"
-          >
-            <QrCode className="w-4 h-4" /> View QR Ticket
-          </button>
+          <>
+            <button
+              onClick={() => onViewQRCode(booking)}
+              className="flex items-center gap-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 border border-indigo-200 px-4 py-2 rounded-lg text-sm font-medium transition cursor-pointer"
+            >
+              <QrCode className="w-4 h-4" /> View QR Ticket
+            </button>
+
+            <button
+              onClick={() => onTransfer(booking)}
+              className="flex items-center gap-1 bg-gray-50 hover:bg-gray-100 text-slate-600 border border-gray-200 px-4 py-2 rounded-lg text-sm font-medium transition cursor-pointer"
+            >
+              <Send className="w-4 h-4" /> Transfer
+            </button>
+          </>
         )}
 
         {booking.paymentStatus !== "CANCELLED" && (
