@@ -9,6 +9,7 @@ import {
   Ticket,
   User,
   ChevronDown,
+  ScanLine,
 } from "lucide-react";
 import NavCategoryDropdown from "./NavCategoryDropdown";
 import type { Event } from "../types";
@@ -137,14 +138,25 @@ function Navbar() {
               {dropdownOpen && (
                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-10">
                   {isAdmin && (
-                    <Link
-                      to="/admin"
-                      onClick={() => setDropdownOpen(false)}
-                      className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-orange-500 hover:bg-orange-50 transition"
-                    >
-                      <ShieldCheck className="w-4 h-4" />
-                      Admin Panel
-                    </Link>
+                    <>
+                      <Link
+                        to="/admin"
+                        onClick={() => setDropdownOpen(false)}
+                        className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-orange-500 hover:bg-orange-50 transition"
+                      >
+                        <ShieldCheck className="w-4 h-4" />
+                        Admin Panel
+                      </Link>
+
+                      <Link
+                        to="/admin/checkin"
+                        onClick={() => setDropdownOpen(false)}
+                        className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-orange-500 hover:bg-orange-50 transition"
+                      >
+                        <ScanLine className="w-4 h-4" />
+                        Ticket Check-In
+                      </Link>
+                    </>
                   )}
 
                   <Link

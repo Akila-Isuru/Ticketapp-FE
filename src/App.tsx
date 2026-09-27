@@ -10,6 +10,7 @@ import MyBookings from "./pages/MyBookings";
 import EventDetails from "./pages/EventDetails";
 import AdminTierManagement from "./pages/AdminTierManagement";
 import CategoryEventsPage from "./pages/CategoryEventsPage";
+import AdminCheckIn from "./pages/AdminCheckIn";
 
 const App: React.FC = () => {
   return (
@@ -32,6 +33,7 @@ const App: React.FC = () => {
               path="/category/:categoryKey"
               element={<CategoryEventsPage />}
             />
+            <Route path="/admin/checkin" element={<AdminCheckIn />} />
           </Routes>
         </main>
         <Footer />
