@@ -9,69 +9,54 @@ interface QRScannerProps {
 const SCANNER_ELEMENT_ID = "qr-scanner-region";
 
 const QRScanner: React.FC<QRScannerProps> = ({ onScan, active }) => {
-  const scannerRef = useRef<Html5Qrcode | null>(null);
+  const onScanRef = useRef(onScan);
+  useEffect(() => {
+    onScanRef.current = onScan;
+  }, [onScan]);
+
+  const queueRef = useRef<Promise<void>>(Promise.resolve());
 
   useEffect(() => {
-    let isMounted = true;
+    if (!active) return;
 
-    const startScanner = async () => {
-      if (!active) return;
+    let cancelled = false;
+    let hasScanned = false;
+    const scanner = new Html5Qrcode(SCANNER_ELEMENT_ID);
 
-      if (scannerRef.current) {
-        try {
-          if (scannerRef.current.isScanning) {
-            await scannerRef.current.stop();
-          }
-          scannerRef.current.clear();
-        } catch (e) {
-          console.warn("Error cleaning up previous scanner", e);
-        }
-      }
-
-      const element = document.getElementById(SCANNER_ELEMENT_ID);
-      if (!element || !isMounted) return;
-
-      const scanner = new Html5Qrcode(SCANNER_ELEMENT_ID);
-      scannerRef.current = scanner;
+    queueRef.current = queueRef.current.then(async () => {
+      if (cancelled) return;
 
       try {
         await scanner.start(
           { facingMode: "environment" },
-          {
-            fps: 10,
-            qrbox: { width: 250, height: 250 },
-            aspectRatio: 1.0,
-          },
+          { fps: 10, qrbox: { width: 250, height: 250 } },
           (decodedText) => {
-            if (isMounted) {
-              onScan(decodedText);
-            }
+            if (hasScanned) return;
+            hasScanned = true;
+            onScanRef.current(decodedText);
           },
           () => {},
         );
       } catch (err) {
         console.error("Failed to start camera:", err);
       }
-    };
-
-    startScanner();
+    });
 
     return () => {
-      isMounted = false;
-      if (scannerRef.current) {
-        if (scannerRef.current.isScanning) {
-          scannerRef.current
-            .stop()
-            .then(() => {
-              scannerRef.current?.clear();
-            })
-            .catch((err) => console.error("Failed to stop scanner", err));
-        } else {
-          scannerRef.current.clear();
+      cancelled = true;
+
+      queueRef.current = queueRef.current.then(async () => {
+        try {
+          if (scanner.isScanning) {
+            await scanner.stop();
+          }
+          scanner.clear();
+        } catch (err) {
+          console.warn("Error while stopping scanner:", err);
         }
-      }
+      });
     };
-  }, [active, onScan]);
+  }, [active]);
 
   return (
     <div className="w-full max-w-sm mx-auto overflow-hidden rounded-xl border border-gray-200 bg-black">
